@@ -39,6 +39,10 @@ def join_lines(lines):
 
 
 def find_imports_in_file(full_path):
+    """
+    @param full_path: full path to a .py file
+    @yields each import found in file
+    """
     with open(full_path) as f:
         for imported in _flat_map(parse_line, join_lines(f)):
             yield imported
