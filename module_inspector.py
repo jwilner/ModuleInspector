@@ -1,9 +1,9 @@
 from itertools import imap, chain
 import re
 
-IMPORT_REGEX = re.compile(r"""(?:from\s([\w\.]+)\simport\s.+)|
-                              (?:import\s([\w\.]+)\sas.+)|
-                              (?:import(?:\s([\w\.,\s]+)?))""",
+IMPORT_REGEX = re.compile(r"""(?:^from\s([\w\.]+)\simport\s.+$)|
+                              (?:^import\s([\w\.]+)\sas.+$)|
+                              (?:^import(?:\s([\w\.,\s]+)?)$)""",
                           re.VERBOSE)
 
 
@@ -24,7 +24,7 @@ def join_lines(lines):
     @param lines, list of strings
     @yields lines joined on '\'
     """
-    lines = imap(str.rstrip, lines)
+    lines = imap(str.strip, lines)
 
     previous_lines = []
     for line in lines:
@@ -50,3 +50,10 @@ def find_imports_in_file(full_path):
 
 def _flat_map(f, *args):
     return chain.from_iterable(imap(f, *args))
+
+
+if __name__ == '__main__':
+    import sys
+    imports = find_imports_in_file(sys.argv[1])
+    print "The following imports were found in {}:".format(sys.argv[1])
+    print "\n".join(imports)
