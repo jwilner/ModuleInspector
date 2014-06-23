@@ -69,7 +69,7 @@ def get_all_imports_in_project(directory, predicate=PYTHON_EXT_REGEX.search):
                              if predicate(fname))}
 
 
-def get_module_name_from_filename(full_path):
+def get_module_names_from_filename(full_path):
     base_name, poss_mod_name = os.path.split(full_path)
     if poss_mod_name == '__init__.py':
         base_name, poss_mod_name = os.path.split(base_name)
@@ -90,15 +90,15 @@ def is_module_directory(directory):
     return os.path.exists(os.path.join(directory, '__init__.py'))
 
 
-def write_to_csv(target_file, directory, file_imports):
+def write_to_csv(target_file, file_imports):
     with open(target_file, 'w') as f:
         writer = csv.writer(f)
         for filename, imports in file_imports.iteritems():
             writer.writerow([filename] +
-                            get_module_name_from_filename(filename)
+                            get_module_names_from_filename(filename)
                             + imports)
 
 
 if __name__ == '__main__':
     all_imports = get_all_imports_in_project(sys.argv[1])
-    write_to_csv(sys.argv[2], sys.argv[1], all_imports)
+    write_to_csv(sys.argv[2], all_imports)
