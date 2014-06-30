@@ -37,7 +37,7 @@ class TestResolveModule(unittest.TestCase):
                           self.func('/tmp/my_package/india/__init__.py', 'foo'))
 
     def test_resolve_builtin(self):
-        self.assertEquals(pa.BUILT_IN,
+        self.assertEquals(pa.BUILT_IN_LABEL % 'sys',
                           self.func('/tmp/my_package/faker.py', 'sys'))
 
     def test_resolve_standard_lib(self):
