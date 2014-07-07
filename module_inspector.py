@@ -1,5 +1,6 @@
-import csv
-from itertools import repeat, imap
+from collections import defaultdict
+import json
+from itertools import repeat, imap, count
 import os
 import sys
 from functools import partial
@@ -16,17 +17,52 @@ def get_all_dependencies_in_project(directory):
                 yield full_path, find_dependencies(full_path, path_finder)
 
 
-def write_to_csv(target_file, filename_dependencies):
+def dump(target_file, filename_dependencies):
+    ids = defaultdict(partial(next, count()))
+
+    structure = {ids[fname]: [ids[d] for d in deps]
+                 for fname, deps in filename_dependencies}
+
+    filenames = [fname for fname, _ in sorted(ids.items(), key=lambda x:x[1])]
+
     with open(target_file, 'w') as f:
-        writer = csv.writer(f)
-        writer.writerow(['filename', 'dependencies'])
-        for filename, dependencies in filename_dependencies:
-            writer.writerow([filename] + list(dependencies))
+        json.dump({'filenames': filenames, 'structure': structure}, f)
 
 
-def csv_to_dict(target_file):
+def load_file(target_file):
     with open(target_file) as f:
-        return {row[0]: row[1:] for row in csv.reader(f)}
+        info = json.load(f)
+    filenames = info['filenames']
+    structure = info['structure']
+    return filenames, structure
+
+
+def get_good_names(filenames):
+    short_name_to_name = {}
+
+    def is_good_name(filename):
+        return filename not in {'__init__.py', 'test'} and \
+            filename not in short_name_to_name
+
+    def get_good_name(full_name):
+        remaining, basename = os.path.split(full_name)
+
+        if is_good_name(basename):
+            name = basename
+        else:
+            name = remaining
+            while not is_good_name(name):
+                remaining, name = os.path.split(remaining)
+            if not name:
+                name = full_name
+        short_name_to_name[name] = full_name
+        return name
+
+    return map(get_good_name, filenames), short_name_to_name
+
+
+
+
 
 
 if __name__ == '__main__':
